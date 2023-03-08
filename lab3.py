@@ -49,24 +49,22 @@ def xor_blocks(b1,b2):
 
 def main():
     
+    #########################
+    #Task One: Padding Oracle
+    #########################
+
+    #Setup
     url = 'http://localhost:8080/eavesdrop'
     response = requests.get(url)
     soup = BeautifulSoup(response.content, "html.parser")
     ciphertext = soup.find("font", {"color": "red"}).text.strip()
     blocks = split_into_blocks(ciphertext)#splits hex ciphertext into 16 byte blocks
 
-    #start outer loop top decrypt all blocks
-    
-    
-  
+
+    #Plaintext Generation 
+    #(This only works for ciphertext of three blocks, must manually change it for other sizes)
 
 
-
-    #####################
-    #Plaintext generation
-    #####################
-
-    
     #Decrypt last block
     newBlock = bytearray(blocks[1])
     originalBlock = bytearray(blocks[1])
@@ -77,15 +75,16 @@ def main():
     for m in range(1,17):
         initialVal = blocks[1][-m]#eventually change -1 to desired index
         newVal = 0
-        print("initial ciphertext value: " + str(initialVal))
+        #print("initial ciphertext value: " + str(initialVal))
         #iterate through 256 values of ciphertext to achieve padding success, will return new val
         for i in range(256):
+        
             newBlock[-m] = i
 
             newCipher = blocks[0] + newBlock + blocks[2]
 
             if(test_cipher(newCipher.hex()) and initialVal!=i):
-                print("new ciphertext byte value: " + str(i))
+                #print("new ciphertext byte value: " + str(i))
                 newVal = i
                 foundFlag = True
         
@@ -103,11 +102,12 @@ def main():
             newBlock[-i] = originalBlock[-i] ^ plaintext[-i] ^ m+1 #use discovered byte to set padding to desired value, sets plaintext to pad
     
         
-        print("\nplaintext at iteration: " + str(m))
-        print(plaintext, end= "\n\n")
+        #print("\nplaintext at iteration: " + str(m))
+    print(plaintext, end= "\n\n")
 
     
 
+    #---------------------------------#
 
     #Decrypt second to last block
     newBlock = bytearray(blocks[0])
@@ -142,13 +142,12 @@ def main():
         #resets newblock so that the last m+1 bytes of the plaintext are padded with m+1
         for i in range(1,m+1):
             newBlock[-i] = originalBlock[-i] ^ plaintext[-i] ^ m+1 #use discovered byte to set padding to desired value, sets plaintext to pad
-    
-        
-      
     print(plaintext, end= "\n\n")
     
-  
-
+    
+    ###############
+    #Task Two: SHA1
+    ###############
 
 
     
