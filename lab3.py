@@ -56,14 +56,9 @@ def main():
     blocks = split_into_blocks(ciphertext)#splits hex ciphertext into 16 byte blocks
 
     #start outer loop top decrypt all blocks
-
-    newBlock = bytearray(blocks[1])
-    originalBlock = bytearray(blocks[1])
-    #print("eavesdropped ciphertext:")
-    #print(ciphertext + "\n")
-    #print("ciphertext consists of " + str(len(blocks)) + " blocks")
-    #print(blocks)
-    #print(len(blocks))
+    
+    
+  
 
 
 
@@ -71,8 +66,14 @@ def main():
     #Plaintext generation
     #####################
 
+    
+    #Decrypt last block
+    newBlock = bytearray(blocks[1])
+    originalBlock = bytearray(blocks[1])
     plaintext = bytearray(16)
     foundFlag = False
+
+   
     for m in range(1,17):
         initialVal = blocks[1][-m]#eventually change -1 to desired index
         newVal = 0
@@ -82,6 +83,7 @@ def main():
             newBlock[-m] = i
 
             newCipher = blocks[0] + newBlock + blocks[2]
+
             if(test_cipher(newCipher.hex()) and initialVal!=i):
                 print("new ciphertext byte value: " + str(i))
                 newVal = i
@@ -104,9 +106,46 @@ def main():
         print("\nplaintext at iteration: " + str(m))
         print(plaintext, end= "\n\n")
 
-
     
 
+
+    #Decrypt second to last block
+    newBlock = bytearray(blocks[0])
+    originalBlock = bytearray(blocks[0])
+    plaintext = bytearray(16)
+    foundFlag = False
+
+    for m in range(1,17):
+        initialVal = blocks[0][-m]#eventually change -1 to desired index
+        newVal = 0
+     
+        #iterate through 256 values of ciphertext to achieve padding success, will return new val
+        for i in range(256):
+            newBlock[-m] = i
+
+            newCipher = newBlock + blocks[1]
+
+            if(test_cipher(newCipher.hex()) and initialVal!=i):
+                
+                newVal = i
+                foundFlag = True
+        
+
+        if foundFlag is False:
+            newVal = initialVal
+        else:
+            foundFlag = False #reset flag
+        
+ 
+        plaintext[-m] = m ^ initialVal ^ newVal #uncover and set plaintext to discovered byte
+
+        #resets newblock so that the last m+1 bytes of the plaintext are padded with m+1
+        for i in range(1,m+1):
+            newBlock[-i] = originalBlock[-i] ^ plaintext[-i] ^ m+1 #use discovered byte to set padding to desired value, sets plaintext to pad
+    
+        
+      
+    print(plaintext, end= "\n\n")
     
   
 
